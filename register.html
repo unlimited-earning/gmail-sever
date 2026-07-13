@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Register - Gmail Vault Pro</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#040209">
+  <style>
+    :root {
+      --bg-primary: #040209;
+      --bg-surface: rgba(255, 255, 255, 0.03);
+      --accent-cyan: #00f2fe;
+      --accent-purple: #9d4edd;
+      --text-primary: #ffffff;
+      --text-secondary: #a0aec0;
+      --border-color: rgba(255, 255, 255, 0.08);
+      --gradient-primary: linear-gradient(135deg, #9d4edd, #00f2fe);
+      --glow-primary: 0 0 20px rgba(0, 242, 254, 0.25);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, sans-serif; -webkit-tap-highlight-color: transparent; }
+    body {
+      background: var(--bg-primary);
+      background-image: radial-gradient(circle at top right, rgba(157, 78, 221, 0.15) 0%, transparent 45%),
+                        radial-gradient(circle at bottom left, rgba(0, 242, 254, 0.15) 0%, transparent 45%);
+      color: var(--text-primary); min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px;
+    }
+    .glass-card {
+      background: var(--bg-surface); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--border-color); border-radius: 24px; padding: 32px; width: 100%; max-width: 420px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+    }
+    .header { text-align: center; margin-bottom: 24px; }
+    .header h2 { font-size: 26px; font-weight: 800; background: linear-gradient(135deg, #fff, var(--accent-cyan)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .header p { color: var(--text-secondary); font-size: 14px; margin-top: 6px; }
+    .input-group { margin-bottom: 16px; }
+    .input-group label { display: block; font-size: 11px; font-weight: 700; color: var(--text-secondary); margin-bottom: 6px; text-transform: uppercase; }
+    .input-wrapper input {
+      width: 100%; background: rgba(255, 255, 255, 0.04); border: 1px solid var(--border-color);
+      border-radius: 14px; padding: 13px; color: #fff; font-size: 14px; outline: none; transition: 0.3s;
+    }
+    .input-wrapper input:focus { border-color: var(--accent-cyan); box-shadow: 0 0 10px rgba(0,242,254,0.2); }
+    .btn-register {
+      width: 100%; background: var(--gradient-primary); color: #fff; border: none; border-radius: 14px;
+      padding: 14px; font-size: 16px; font-weight: 600; cursor: pointer; transition: transform 0.1s; margin-top: 10px;
+    }
+    .error-msg { color: #ff4d4d; font-size: 13px; margin-bottom: 15px; text-align: center; display: none; }
+    .footer-link { text-align: center; margin-top: 20px; font-size: 13px; color: var(--text-secondary); }
+    .footer-link a { color: var(--accent-cyan); text-decoration: none; }
+  </style>
+</head>
+<body>
+
+  <div class="glass-card">
+    <div class="header">
+      <h2>Initialize Storage</h2>
+      <p>Configure structural cryptographic bounds</p>
+    </div>
+
+    <div class="error-msg" id="errorBlock"></div>
+
+    <form id="registerForm">
+      <div class="input-group">
+        <label>Master Name</label>
+        <div class="input-wrapper"><input type="text" id="name" placeholder="John Doe" required></div>
+      </div>
+
+      <div class="input-group">
+        <label>Access Phone</label>
+        <div class="input-wrapper"><input type="tel" id="phoneNumber" placeholder="e.g. +1234567890" required></div>
+      </div>
+
+      <div class="input-group">
+        <label>Create Cipher Passphrase</label>
+        <div class="input-wrapper"><input type="password" id="password" placeholder="Min. 6 characters" required></div>
+      </div>
+
+      <div class="input-group">
+        <label>Verify Cipher Passphrase</label>
+        <div class="input-wrapper"><input type="password" id="confirmPassword" placeholder="Repeat passphrase" required></div>
+      </div>
+
+      <button type="submit" class="btn-register" id="submitBtn">Allocate Space</button>
+    </form>
+
+    <div class="footer-link">
+      Signature active? <a href="login.html">Access Vault</a>
+    </div>
+  </div>
+
+  <script type="module">
+    import { firebaseConfig } from './firebase-config.js';
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./service-worker.js').catch(() => {});
+    }
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+
+    const submitBtn = document.getElementById('submitBtn');
+
+    document.getElementById('registerForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const errorBlock = document.getElementById('errorBlock');
+      errorBlock.style.display = 'none';
+
+      const name = document.getElementById('name').value.trim();
+      const rawPhone = document.getElementById('phoneNumber').value.trim();
+      const password = document.getElementById('password').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+
+      if (password !== confirmPassword) {
+        errorBlock.textContent = "Signature validation failed. Passphrases do not match.";
+        errorBlock.style.display = 'block';
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Allocating security zones...';
+
+      const phoneDigits = rawPhone.replace(/\D/g, '');
+      const virtualEmail = `${phoneDigits}@gmailvault.local`;
+
+      try {
+        const userCredential = await createUserWithEmailAndPassword(auth, virtualEmail, password);
+        const user = userCredential.user;
+
+        await set(ref(db, `users/${user.uid}`), {
+          uid: user.uid,
+          name: name,
+          phone: rawPhone,
+          createdAt: new Date().toISOString()
+        });
+
+        window.location.href = 'home.html';
+      } catch (err) {
+        errorBlock.textContent = err.message;
+        errorBlock.style.display = 'block';
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Allocate Space';
+      }
+    });
+  </script>
+</body>
+</html>
