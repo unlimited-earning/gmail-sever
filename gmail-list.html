@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Vault Directory - Gmail Vault Pro</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#040209">
+  <style>
+    :root {
+      --bg-primary: #040209;
+      --bg-surface: rgba(255, 255, 255, 0.03);
+      --accent-cyan: #00f2fe;
+      --accent-purple: #9d4edd;
+      --text-primary: #ffffff;
+      --text-secondary: #a0aec0;
+      --border-color: rgba(255, 255, 255, 0.08);
+      --gradient-primary: linear-gradient(135deg, #9d4edd, #00f2fe);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, sans-serif; -webkit-tap-highlight-color: transparent; }
+    body { background: var(--bg-primary); background-image: radial-gradient(circle at bottom left, rgba(0, 242, 254, 0.1) 0%, transparent 45%); color: var(--text-primary); min-height: 100vh; padding-bottom: 110px; }
+    .header-bar { padding: 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; backdrop-filter: blur(10px); position: sticky; top:0; z-index:90; }
+    .container { padding: 20px; max-width: 500px; margin: 0 auto; }
+    .card-list { display: flex; flex-direction: column; gap: 16px; }
+    .vault-card { background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 20px; padding: 18px; transition: transform 0.2s; }
+    .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .card-label { font-size: 11px; text-transform: uppercase; background: rgba(157, 78, 221, 0.15); color: #c084fc; padding: 2px 10px; border-radius: 12px; border: 1px solid rgba(157,78,221,0.2); font-weight: 700; }
+    .card-actions { display: flex; gap: 8px; margin-top: 14px; }
+    .action-sub-btn { flex: 1; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-color); color: #fff; padding: 10px; border-radius: 10px; font-size: 12px; cursor: pointer; font-weight: 600; transition: background 0.2s; }
+    .action-sub-btn:active { background: rgba(255,255,255,0.1); }
+    .inspect-btn { background: var(--gradient-primary); border: none; }
+    
+    .bottom-nav {
+      position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 440px;
+      background: rgba(4, 2, 9, 0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--border-color);
+      border-radius: 24px; display: flex; justify-content: space-around; padding: 12px 6px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); z-index: 1000;
+    }
+    .nav-item { display: flex; flex-direction: column; align-items: center; color: var(--text-secondary); text-decoration: none; font-size: 10px; gap: 4px; }
+    .nav-item.active { color: var(--accent-cyan); }
+    .nav-item svg { width: 20px; height: 20px; fill: currentColor; }
+  </style>
+</head>
+<body>
+
+  <div class="header-bar">
+    <h1 style="font-size:20px; font-weight:800;">Ledger Directory</h1>
+    <span id="counter" style="font-size:12px; color:var(--accent-cyan); font-weight:700;">Syncing...</span>
+  </div>
+
+  <div class="container">
+    <div class="card-list" id="listContainer">
+      <p style="text-align: center; color: var(--text-secondary); padding: 40px; font-size:14px;">Validating hardware signatures...</p>
+    </div>
+  </div>
+
+  <div class="bottom-nav">
+    <a href="home.html" class="nav-item">
+      <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>Home
+    </a>
+    <a href="gmail-list.html" class="nav-item active">
+      <svg viewBox="0 0 24 24"><path d="M4 14h6v-10h-6v10zm0 5h6v-3h-6v3zm8-15v10h6v-10h-6zm0 15h6v-3h-6v3z"/></svg>Vault
+    </a>
+    <a href="add-gmail.html" class="nav-item">
+      <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>Add
+    </a>
+    <a href="search.html" class="nav-item">
+      <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>Search
+    </a>
+    <a href="settings.html" class="nav-item">
+      <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>Options
+    </a>
+  </div>
+
+  <script type="module">
+    import { firebaseConfig } from './firebase-config.js';
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./service-worker.js').catch(() => {});
+    }
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        window.location.href = 'login.html';
+        return;
+      }
+
+      const userVaultRef = ref(db, `gmailVault/${user.uid}`);
+      onValue(userVaultRef, (snapshot) => {
+        const listContainer = document.getElementById('listContainer');
+        if (!snapshot.exists()) {
+          document.getElementById('counter').textContent = "0 nodes";
+          listContainer.innerHTML = `
+            <div style="text-align: center; color: var(--text-secondary); padding: 40px; font-size:14px;">
+              No records found. Select "Add" below to store payloads.
+            </div>`;
+          return;
+        }
+
+        const val = snapshot.val();
+        const records = Object.keys(val).map(key => ({ id: key, ...val[key] }));
+        document.getElementById('counter').textContent = `${records.length} parameters`;
+
+        let html = '';
+        records.forEach(item => {
+          html += `
+            <div class="vault-card">
+              <div class="card-header">
+                <span class="card-label">${escapeHtml(item.label || 'Default')}</span>
+                ${item.favorite ? '<span style="color:#fbbf24; font-size:16px;">★</span>' : ''}
+              </div>
+              <div style="font-size:16px; font-weight:700; margin-bottom:4px; word-break: break-all;">${escapeHtml(item.gmailAddress)}</div>
+              <div style="font-size:12px; color: var(--text-secondary);">Recovery: ${escapeHtml(item.recoveryEmail || 'None assigned')}</div>
+              <div class="card-actions">
+                <button class="action-sub-btn" onclick="navigator.clipboard.writeText('${escapeJs(item.gmailAddress)}'); alert('Payload address copied');">Copy Mail</button>
+                <button class="action-sub-btn" onclick="navigator.clipboard.writeText('${escapeJs(item.gmailPassword)}'); alert('Payload password copied');">Copy Pass</button>
+                <button class="action-sub-btn inspect-btn" onclick="location.href='gmail-details.html?id=${item.id}'">Inspect</button>
+              </div>
+            </div>`;
+        });
+        listContainer.innerHTML = html;
+      });
+    });
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    }
+
+    function escapeJs(str) {
+      if (!str) return '';
+      return str.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"');
+    }
+  </script>
+</body>
+</html>
