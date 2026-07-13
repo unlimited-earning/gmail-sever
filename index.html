@@ -125,25 +125,40 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-    // SW Registration block
+    // Service Worker Registration
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./service-worker.js').catch(() => {});
       });
     }
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
+    // Safety Timeout Loop: 
+    // কোনো কারণে মডিউল ব্লক বা কানেকশন এরর হলে ৪ সেকেন্ড পর এটি নিজে থেকেই লগইন স্ক্রিনে নিয়ে যাবে।
+    const safetyTimeout = setTimeout(() => {
+      console.warn("Firebase execution delayed or blocked. Initiating fallback redirection.");
+      window.location.href = 'login.html';
+    }, 4000);
 
-    setTimeout(() => {
+    try {
+      const app = initializeApp(firebaseConfig);
+      const auth = getAuth(app);
+
       onAuthStateChanged(auth, (user) => {
+        clearTimeout(safetyTimeout); // ফায়ারবেস কাজ করলে সেফটি টাইমারটি বন্ধ হবে।
         if (user) {
           window.location.href = 'home.html';
         } else {
           window.location.href = 'login.html';
         }
+      }, (error) => {
+        clearTimeout(safetyTimeout);
+        window.location.href = 'login.html';
       });
-    }, 2000);
+    } catch (e) {
+      console.error("Initialization error:", e);
+      clearTimeout(safetyTimeout);
+      window.location.href = 'login.html';
+    }
   </script>
 </body>
 </html>
