@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Inspect - Gmail Vault Pro</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#040209">
+  <style>
+    :root {
+      --bg-primary: #040209;
+      --bg-surface: rgba(255, 255, 255, 0.03);
+      --accent-cyan: #00f2fe;
+      --accent-purple: #9d4edd;
+      --text-primary: #ffffff;
+      --text-secondary: #a0aec0;
+      --border-color: rgba(255, 255, 255, 0.08);
+      --gradient-primary: linear-gradient(135deg, #9d4edd, #00f2fe);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, sans-serif; -webkit-tap-highlight-color: transparent; }
+    body { background: var(--bg-primary); background-image: radial-gradient(circle at center, rgba(157, 78, 221, 0.1) 0%, transparent 80%); color: var(--text-primary); min-height: 100vh; padding-bottom: 90px; }
+    .header-bar { padding: 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; backdrop-filter: blur(10px); position: sticky; top:0; z-index:90; }
+    .container { padding: 20px; max-width: 500px; margin: 0 auto; }
+    .glass-detail-card { background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 24px; padding: 24px; }
+    .input-group { margin-bottom: 18px; }
+    .input-group label { display: block; font-size: 11px; font-weight: 700; color: var(--text-secondary); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .input-wrapper { position: relative; }
+    .input-wrapper input, .input-wrapper textarea, .input-wrapper select {
+      width: 100%; background: rgba(255, 255, 255, 0.04); border: 1px solid var(--border-color);
+      border-radius: 14px; padding: 13px 14px; color: #fff; font-size: 14px; outline: none; transition: 0.3s;
+    }
+    .input-wrapper input:focus, .input-wrapper textarea:focus { border-color: var(--accent-cyan); box-shadow: 0 0 10px rgba(0,242,254,0.2); }
+    .btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 24px; }
+    .btn { padding: 14px; border-radius: 12px; font-weight: 600; cursor: pointer; border: none; font-size: 15px; }
+    .btn-update { background: var(--gradient-primary); color: white; }
+    .btn-delete { background: rgba(255, 77, 77, 0.15); color: #ff4d4d; border: 1px solid rgba(255, 77, 77, 0.2); }
+    .btn-copy-floating { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.1); border: none; color: var(--accent-cyan); padding: 5px 10px; border-radius: 8px; font-size: 11px; cursor: pointer; font-weight: 600; }
+  </style>
+</head>
+<body>
+
+  <div class="header-bar">
+    <h2 id="inspectedTitle" style="font-size:18px; font-weight:800; max-width:70%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">Inspect Node</h2>
+    <span style="font-size:12px; color:var(--accent-cyan); cursor:pointer; font-weight:700; background:rgba(0,242,254,0.1); padding:4px 10px; border-radius:12px;" onclick="location.href='gmail-list.html'">Back</span>
+  </div>
+
+  <div class="container">
+    <div class="glass-detail-card">
+      <form id="inspectForm">
+        <div class="input-group">
+          <label>Gmail Address</label>
+          <div class="input-wrapper">
+            <input type="email" id="gmailAddress" required>
+            <button type="button" class="btn-copy-floating" onclick="copyValue('gmailAddress')">Copy</button>
+          </div>
+        </div>
+        <div class="input-group">
+          <label>Credential Password</label>
+          <div class="input-wrapper">
+            <input type="password" id="gmailPassword" required>
+            <button type="button" class="btn-copy-floating" id="togglePassBtn" style="right:60px; color:#fff;">Show</button>
+            <button type="button" class="btn-copy-floating" onclick="copyValue('gmailPassword')">Copy</button>
+          </div>
+        </div>
+        <div class="input-group">
+          <label>Recovery Phone Number</label>
+          <div class="input-wrapper">
+            <input type="tel" id="recoveryPhone">
+            <button type="button" class="btn-copy-floating" onclick="copyValue('recoveryPhone')">Copy</button>
+          </div>
+        </div>
+        <div class="input-group">
+          <label>Recovery Email</label>
+          <div class="input-wrapper">
+            <input type="email" id="recoveryEmail">
+            <button type="button" class="btn-copy-floating" onclick="copyValue('recoveryEmail')">Copy</button>
+          </div>
+        </div>
+        <div class="input-group">
+          <label>Authenticator Secret</label>
+          <div class="input-wrapper"><input type="text" id="authenticatorSecret"></div>
+        </div>
+        <div class="input-group">
+          <label>Functional Label</label>
+          <div class="input-wrapper">
+            <select id="label">
+              <option value="Personal">Personal</option>
+              <option value="Finance">Finance</option>
+              <option value="Gaming">Gaming</option>
+              <option value="Enterprise">Enterprise</option>
+            </select>
+          </div>
+        </div>
+        <div class="input-group">
+          <label>Meta Notes</label>
+          <div class="input-wrapper"><textarea id="notes" rows="3"></textarea></div>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:4px 0;">
+          <label style="font-size:13px; color:var(--text-secondary); font-weight:600;">Favorite</label>
+          <input type="checkbox" id="favorite" style="width:22px; height:22px; accent-color: var(--accent-cyan); cursor:pointer;">
+        </div>
+        <div class="btn-row">
+          <button type="button" class="btn btn-delete" id="deleteBtn">Wipe Node</button>
+          <button type="submit" class="btn btn-update" id="updateBtn">Patch Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script type="module">
+    import { firebaseConfig } from './firebase-config.js';
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getDatabase, ref, get, update, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./service-worker.js').catch(() => {});
+    }
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+
+    const id = new URLSearchParams(window.location.search).get('id');
+    let currentUser = null;
+
+    if (!id) window.location.href = 'gmail-list.html';
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) { window.location.href = 'login.html'; return; }
+      currentUser = user;
+      const snap = await get(ref(db, `gmailVault/${user.uid}/${id}`));
+      if (snap.exists()) {
+        const item = snap.val();
+        document.getElementById('inspectedTitle').textContent = item.gmailAddress;
+        document.getElementById('gmailAddress').value = item.gmailAddress;
+        document.getElementById('gmailPassword').value = item.gmailPassword;
+        document.getElementById('recoveryPhone').value = item.recoveryPhone || '';
+        document.getElementById('recoveryEmail').value = item.recoveryEmail || '';
+        document.getElementById('authenticatorSecret').value = item.authenticatorSecret || '';
+        document.getElementById('label').value = item.label || 'Personal';
+        document.getElementById('notes').value = item.notes || '';
+        document.getElementById('favorite').checked = item.favorite || false;
+      } else {
+        window.location.href = 'gmail-list.html';
+      }
+    });
+
+    document.getElementById('togglePassBtn').addEventListener('click', () => {
+      const field = document.getElementById('gmailPassword');
+      if (field.type === 'password') {
+        field.type = 'text';
+        document.getElementById('togglePassBtn').textContent = 'Hide';
+      } else {
+        field.type = 'password';
+        document.getElementById('togglePassBtn').textContent = 'Show';
+      }
+    });
+
+    document.getElementById('inspectForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const updateBtn = document.getElementById('updateBtn');
+      updateBtn.disabled = true;
+      updateBtn.textContent = 'Patching...';
+
+      try {
+        await update(ref(db, `gmailVault/${currentUser.uid}/${id}`), {
+          gmailAddress: document.getElementById('gmailAddress').value.trim().toLowerCase(),
+          gmailPassword: document.getElementById('gmailPassword').value,
+          recoveryPhone: document.getElementById('recoveryPhone').value.trim(),
+          recoveryEmail: document.getElementById('recoveryEmail').value.trim(),
+          authenticatorSecret: document.getElementById('authenticatorSecret').value.trim(),
+          label: document.getElementById('label').value,
+          notes: document.getElementById('notes').value.trim(),
+          favorite: document.getElementById('favorite').checked,
+          updatedAt: new Date().toISOString()
+        });
+        window.location.href = 'gmail-list.html';
+      } catch (err) {
+        alert(err.message);
+        updateBtn.disabled = false;
+        updateBtn.textContent = 'Patch Changes';
+      }
+    });
+
+    document.getElementById('deleteBtn').addEventListener('click', async () => {
+      if (!confirm("Confirm: Execute absolute deletion of this node? This transaction cannot be reverted.")) return;
+      await remove(ref(db, `gmailVault/${currentUser.uid}/${id}`));
+      window.location.href = 'gmail-list.html';
+    });
+
+    window.copyValue = function(elementId) {
+      const field = document.getElementById(elementId);
+      if (!field.value) { alert("Node empty"); return; }
+      navigator.clipboard.writeText(field.value);
+      alert('Secured payload copied to clipboard');
+    };
+  </script>
+</body>
+</html>
