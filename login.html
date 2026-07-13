@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Login - Gmail Vault Pro</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#040209">
+  <style>
+    /* CSS Injection */
+    :root {
+      --bg-primary: #040209;
+      --bg-surface: rgba(255, 255, 255, 0.03);
+      --accent-cyan: #00f2fe;
+      --accent-purple: #9d4edd;
+      --text-primary: #ffffff;
+      --text-secondary: #a0aec0;
+      --border-color: rgba(255, 255, 255, 0.08);
+      --gradient-primary: linear-gradient(135deg, #9d4edd, #00f2fe);
+      --glow-primary: 0 0 20px rgba(0, 242, 254, 0.25);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, sans-serif; -webkit-tap-highlight-color: transparent; }
+    body {
+      background: var(--bg-primary);
+      background-image: radial-gradient(circle at top left, rgba(157, 78, 221, 0.15) 0%, transparent 45%),
+                        radial-gradient(circle at bottom right, rgba(0, 242, 254, 0.15) 0%, transparent 45%);
+      color: var(--text-primary); min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px;
+    }
+    .glass-card {
+      background: var(--bg-surface); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--border-color); border-radius: 24px; padding: 32px; width: 100%; max-width: 410px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+    }
+    .header { text-align: center; margin-bottom: 28px; }
+    .header h2 { font-size: 26px; font-weight: 800; background: linear-gradient(135deg, #fff, var(--accent-cyan)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .header p { color: var(--text-secondary); font-size: 14px; margin-top: 6px; }
+    .input-group { margin-bottom: 20px; }
+    .input-group label { display: block; font-size: 11px; font-weight: 700; color: var(--text-secondary); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .input-wrapper input {
+      width: 100%; background: rgba(255, 255, 255, 0.04); border: 1px solid var(--border-color);
+      border-radius: 14px; padding: 14px; color: #fff; font-size: 15px; outline: none; transition: 0.3s;
+    }
+    .input-wrapper input:focus { border-color: var(--accent-cyan); box-shadow: 0 0 12px rgba(0, 242, 254, 0.2); }
+    .options { display: flex; justify-content: space-between; align-items: center; font-size: 13px; margin-bottom: 24px; color: var(--text-secondary); }
+    .options a { color: var(--accent-cyan); text-decoration: none; }
+    .btn-login {
+      width: 100%; background: var(--gradient-primary); color: #fff; border: none; border-radius: 14px;
+      padding: 14px; font-size: 16px; font-weight: 600; cursor: pointer; transition: transform 0.1s, box-shadow 0.2s; box-shadow: var(--glow-primary);
+    }
+    .btn-login:active { transform: scale(0.98); }
+    .error-msg { color: #ff4d4d; font-size: 13px; margin-bottom: 15px; text-align: center; display: none; }
+    .footer-link { text-align: center; margin-top: 24px; font-size: 14px; color: var(--text-secondary); }
+    .footer-link a { color: var(--accent-cyan); text-decoration: none; font-weight: 600; }
+  </style>
+</head>
+<body>
+
+  <div class="glass-card">
+    <div class="header">
+      <h2>Decrypt Vault</h2>
+      <p>Configure interface access</p>
+    </div>
+
+    <div class="error-msg" id="errorBlock"></div>
+
+    <form id="loginForm">
+      <div class="input-group">
+        <label>Access Phone</label>
+        <div class="input-wrapper">
+          <input type="tel" id="phoneNumber" placeholder="e.g., +1234567890" required>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label>Pass Phrase</label>
+        <div class="input-wrapper">
+          <input type="password" id="password" placeholder="••••••••" required>
+        </div>
+      </div>
+
+      <div class="options">
+        <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+          <input type="checkbox" id="rememberMe" style="accent-color: var(--accent-cyan);"> Remember me
+        </label>
+        <a href="#" id="forgotPass">Loss of Key?</a>
+      </div>
+
+      <button type="submit" class="btn-login" id="submitBtn">Unlock Vault</button>
+    </form>
+
+    <div class="footer-link">
+      Need a physical sandbox? <a href="register.html">Sign Up</a>
+    </div>
+  </div>
+
+  <script type="module">
+    import { firebaseConfig } from './firebase-config.js';
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./service-worker.js').catch(() => {});
+    }
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    const submitBtn = document.getElementById('submitBtn');
+    const errorBlock = document.getElementById('errorBlock');
+
+    if (localStorage.getItem('savedPhone')) {
+      document.getElementById('phoneNumber').value = localStorage.getItem('savedPhone');
+      document.getElementById('rememberMe').checked = true;
+    }
+
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errorBlock.style.display = 'none';
+      submitBtn.textContent = 'Decrypting database...';
+      submitBtn.disabled = true;
+
+      const rawPhone = document.getElementById('phoneNumber').value.trim();
+      const password = document.getElementById('password').value;
+      const rememberMe = document.getElementById('rememberMe').checked;
+
+      const phoneDigits = rawPhone.replace(/\D/g, '');
+      const virtualEmail = `${phoneDigits}@gmailvault.local`;
+
+      try {
+        await signInWithEmailAndPassword(auth, virtualEmail, password);
+        if (rememberMe) {
+          localStorage.setItem('savedPhone', rawPhone);
+        } else {
+          localStorage.removeItem('savedPhone');
+        }
+        window.location.href = 'home.html';
+      } catch (err) {
+        errorBlock.textContent = "Signature mismatch. Double-check security parameters.";
+        errorBlock.style.display = 'block';
+        submitBtn.textContent = 'Unlock Vault';
+        submitBtn.disabled = false;
+      }
+    });
+
+    document.getElementById('forgotPass').addEventListener('click', (e) => {
+      e.preventDefault();
+      alert("Credentials reside locally. If lost, invoke recovery mechanisms or reconstruct storage space.");
+    });
+  </script>
+</body>
+</html>
